@@ -1,0 +1,220 @@
+
+<!--  Hi! It's nice to see you here. :) If you have questions or suggestions, 
+      please email me at simrankbhatt@gmail.com. Happy snaking!
+      
+      modifications:
+      snake resizes itself to 4 after reaching a length of 25 
+      added a reset button (R on the keyboard)
+       added a score and high score display
+       snake now bounces back from the left & right walls and ceiling of the canvas rather than passing through to the other side. 
+       canvas size is larger
+      -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snake!</title>
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: black; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  canvas {
+    border: 10px solid white;
+  }
+  </style>
+</head>
+<body>
+<canvas width="800" height="600" id="game"></canvas>
+<!-- javascript begins -->
+<script>
+var canvas = document.getElementById('game');
+var context = canvas.getContext('2d');
+
+//why is grid = 16??
+var grid = 16;
+var count = 0;
+
+//snake object
+var snake = {
+  x: 80,
+  y: 80,
+  
+  // snake velocity. moves one grid length every frame in either the x or y direction
+  dx: grid,
+  dy: 0,
+  
+  // keep track of all grids the snake body occupies
+  cells: [],
+  score: 0,
+  highScore: 0,
+  // length of the snake. grows when eating an apple
+  maxCells: 4
+};
+
+var apple = {
+  x: 320,
+  y: 320
+};
+
+//function to produce a random integer within a given range
+function getRandomInteger(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+
+}
+
+function loop() {
+  requestAnimationFrame(loop);
+
+ //speed of snake. 60/15 = 4
+  if(++count < 4) {
+    return;
+  }
+
+  count = 0;
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  //moving the snake by its defined velocity (see snake object)
+  snake.x += snake.dx;
+  snake.y += snake.dy;
+
+  
+
+    //keeping the snake within canvas boundaries
+  if(snake.x <= 0) {
+    snake.x = 0;
+    snake.dx = grid;
+    snake.dy = 0;
+  }
+
+  else if(snake.x >= canvas.width) {
+    snake.x = canvas.width;
+    snake.dx = -grid;
+    snake.dy = 0;
+  }
+
+  if(snake.y <= 0) {
+    snake.y = 0;
+    snake.dy = 16;
+    snake.dx = 0;
+    }
+  else if(snake.y >= canvas.height) {
+    snake.y = 0;
+    snake.dy = 16;
+    snake.dx = 0;
+    }
+
+    //adding the current coordinate of the snake to the array keeping track of snake length
+   snake.cells.unshift({x: snake.x, y: snake.y});
+
+  //make sure the snake length is as defined
+  if(snake.cells.length > snake.maxCells) {
+    snake.cells.pop();
+  }
+ 
+  //score count
+  context.fillStyle = 'yellow';
+  context.font = "20px Georgia";
+  context.fillText("Score: ", 15, 30);
+  context.font = "23px Georgia";
+  context.fillText(snake.score, 75, 30);
+
+ //high score count
+  context.font = "14px Serif";
+  context.fillText("High Score: ", 15, 55);
+  context.font = "15px Serif";
+  context.fillText(snake.highScore, 85, 55);
+
+  //draw apple
+  context.fillStyle = 'red';
+  context.fillRect(apple.x, apple.y, grid-1, grid-1); 
+  
+   //draw snake
+   context.fillStyle = 'green';
+   //fill each coordinate stored in the cells array (in the snake object) with green
+  snake.cells.forEach(function(cell, index) {
+     
+      context.fillRect(cell.x, cell.y, grid-1, grid-1);
+
+      //increase snake length when it 'eats' the apple
+      if(cell.x == apple.x && cell.y == apple.y) {
+        snake.maxCells++;  
+        snake.score++; 
+
+        if(snake.score > snake.highScore) {
+          snake.highScore = snake.score;
+        }
+      //canvas size is 800x600 = 75x25 grids?
+      apple.x = getRandomInteger(0, 50) * grid;
+      apple.y = getRandomInteger(0, 25) * grid;
+
+      }
+  }); //close forEach (snake drawing function)
+  
+  if(snake.maxCells >= 50) {
+    snake.x = 160;
+        snake.y = 160;
+        snake.cells = [];
+        snake.maxCells = 4;
+        snake.dx = grid;
+        snake.dy = 0;
+      
+   } //close if statement
+ } //close game loop
+
+// listen to keyboard events to move the snake
+document.addEventListener('keydown', function(e) {
+  // prevent snake from backtracking on itself by checking that it's 
+  // not already moving on the same axis (pressing left while moving
+  // left won't do anything, and pressing right while moving left
+  // shouldn't let you collide with your own body)
+
+  //reset button (press R on the keyboard to reset the game)
+  if(e.which == 82) {
+       snake.x = 160;
+        snake.y = 160;
+        snake.cells = [];
+        snake.maxCells = 4;
+        snake.dx = grid;
+        snake.dy = 0;
+        snake.score = 0;
+        apple.x = getRandomInt(0, 25) * grid;
+        apple.y = getRandomInt(0, 25) * grid;
+  }
+  // left arrow key
+  if (e.which === 37 && snake.dx === 0) {
+    snake.dx = -grid;
+    snake.dy = 0;
+  }
+  // up arrow key
+  else if (e.which === 38 && snake.dy === 0) {
+    snake.dy = -grid;
+    snake.dx = 0;
+  }
+  // right arrow key
+  else if (e.which === 39 && snake.dx === 0) {
+    snake.dx = grid;
+    snake.dy = 0;
+  }
+  // down arrow key
+  else if (e.which === 40 && snake.dy === 0) {
+    snake.dy = grid;
+    snake.dx = 0;
+  }
+});
+
+// start the game
+requestAnimationFrame(loop);
+
+</script> <!-- javascript ends -->
+
+</body>
+</html>
